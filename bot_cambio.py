@@ -1,8 +1,6 @@
-# -*- coding: utf-8 -*-
 # Simulador del bot de Cambio Atlántico (casa de cambio USD / EUR).
 # Trabajo Práctico Integrador - Organización Empresarial.
 #
-# Usa solo conceptos basicos: variables, diccionarios, funciones, if/elif y while.
 # El "estado" es un simple texto ("REPOSO", "MENU_MONEDA", etc.) que le da memoria
 # al bot, igual que en el diagrama de la maquina de estados.
 #
@@ -22,7 +20,15 @@ OPERADOR = "+54 9 11 0000-0000"
 
 def leer_cotizaciones():
     """
-    Devuelve un diccionario: {'USD': {'compra': 1180, 'venta': 1230}, ...}
+    Lee las cotizaciones actuales de las divisas desde la base de datos Excel.
+
+    Accede a la hoja 'Cotizaciones' del archivo Excel configurado y extrae
+    los valores de compra y venta para cada moneda disponible.
+
+    Returns:
+        dict: Un diccionario con las monedas como llaves y otro diccionario
+            con sus valores de 'compra' y 'venta'.
+            Ejemplo: {'USD': {'compra': 1180, 'venta': 1230}}
     """
     libro = load_workbook(ARCHIVO, data_only=True)
     hoja = libro["Cotizaciones"]
@@ -36,7 +42,14 @@ def leer_cotizaciones():
 
 def leer_stock():
     """
-    Devuelve un diccionario: {'USD': 25000, 'EUR': 12000, 'ARS': 40000000}
+    Lee los fondos disponibles de cada moneda en la base de datos Excel.
+
+    Accede a la hoja 'Stock' para obtener las existencias físicas de las
+    divisas extranjeras y de la caja en pesos argentinos (ARS).
+
+    Returns:
+        dict: Un diccionario con el código de la moneda y su cantidad disponible.
+            Ejemplo: {'USD': 25000, 'EUR': 12000, 'ARS': 40000000}
     """
     libro = load_workbook(ARCHIVO, data_only=True)
     hoja = libro["Stock"]
@@ -50,8 +63,19 @@ def leer_stock():
 
 def hay_disponibilidad(moneda, operacion, monto):
     """
-    Compra: hace falta stock de la divisa. Venta: hace falta caja en pesos.
-    Devuelve True si hay disponibilidad, False si no.
+    Verifica si la casa de cambio tiene fondos suficientes para la transacción.
+
+    Si es una compra del cliente, valida si hay suficiente stock de esa divisa.
+    Si es una venta del cliente, calcula el total en pesos y valida si la casa
+    tiene suficiente efectivo en ARS para pagarle.
+
+    Args:
+        moneda (str): El código de la divisa elegida (ej. 'USD', 'EUR').
+        operacion (str): El tipo de transacción ('comprar' o 'vender').
+        monto (int): La cantidad de divisa extranjera que se quiere operar.
+
+    Returns:
+        bool: True si la casa de cambio puede cubrir la operación, False si no.
     """
     stock = leer_stock()
     cotizaciones = leer_cotizaciones()
@@ -64,8 +88,20 @@ def hay_disponibilidad(moneda, operacion, monto):
 
 def calcular_total(moneda, operacion, monto):
     """
-    Devuelve (total_en_pesos, cotizacion_aplicada).
-    Para comprar, se aplica la cotizacion de venta. Para vender, la cotizacion de compra.
+    Calcula el costo total en pesos y determina la tasa de cambio a aplicar.
+
+    Aplica la cotización de 'venta' si el cliente compra divisas,
+    o la cotización de 'compra' si el cliente vende sus divisas.
+
+    Args:
+        moneda (str): El código de la divisa elegida (ej. 'USD', 'EUR').
+        operacion (str): El tipo de transacción ('comprar' o 'vender').
+        monto (int): La cantidad de divisa extranjera a operar.
+
+    Returns:
+        tuple: Un par que contiene:
+            - total_en_pesos (float): El resultado financiero de la operación.
+            - tasa_aplicada (float): El precio unitario por el cual se multiplicó.
     """
 
     cotizaciones = leer_cotizaciones()
@@ -78,7 +114,21 @@ def calcular_total(moneda, operacion, monto):
 
 def guardar_operacion(operacion, moneda, monto):
     """
-    Agrega la operacion a la planilla y ajusta el stock. Devuelve (total, cotizacion_aplicada).
+    Registra la transacción en el historial y actualiza el stock en el Excel.
+
+    Calcula los totales, añade una fila a la hoja 'Operaciones' con la fecha
+    y hora actual, e incrementa o reduce los saldos correspondientes en la
+    hoja 'Stock' antes de guardar el archivo.
+
+    Args:
+        operacion (str): El tipo de transacción ('comprar' o 'vender').
+        moneda (str): El código de la divisa elegida (ej. 'USD', 'EUR').
+        monto (int): La cantidad de divisa extranjera operada.
+
+    Returns:
+        tuple: Un par que contiene:
+            - total (float): El monto total final en pesos de la transacción.
+            - tasa (float): La cotización final que fue aplicada a la divisa.
     """
     total, tasa = calcular_total(moneda, operacion, monto)
     libro = load_workbook(ARCHIVO)
@@ -142,7 +192,9 @@ while True:
         operacion = ""
         monto = 0
         intentos = 0
-        print("Bot: Bienvenido a Cambio Atlántico. ¿Con qué moneda desea operar? (USD o EUR)")
+        print(
+            "Bot: Bienvenido a Cambio Atlántico. ¿Con qué moneda desea operar? (USD o EUR)"
+        )
         continue
 
     if estado == "REPOSO":
@@ -167,7 +219,9 @@ while True:
             intentos += 1
             if intentos >= MAX_INTENTOS:
                 print(
-                    "Bot: Te derivo con un operador: " + OPERADOR + ". Escribí 'operar' para volver a intentarlo."
+                    "Bot: Te derivo con un operador: "
+                    + OPERADOR
+                    + ". Escribí 'operar' para volver a intentarlo."
                 )
                 estado = "REPOSO"
                 intentos = 0
@@ -190,7 +244,9 @@ while True:
             intentos += 1
             if intentos >= MAX_INTENTOS:
                 print(
-                    "Bot: Te derivo con un operador: " + OPERADOR + ". Escribí 'operar' para volver a intentarlo."
+                    "Bot: Te derivo con un operador: "
+                    + OPERADOR
+                    + ". Escribí 'operar' para volver a intentarlo."
                 )
                 estado = "REPOSO"
                 intentos = 0
