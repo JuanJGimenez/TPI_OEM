@@ -162,8 +162,21 @@ def guardar_operacion(operacion, moneda, monto):
                 hoja_st.cell(fila, 2).value += monto  # recibe divisa
             if nombre == "ARS":
                 hoja_st.cell(fila, 2).value -= total  # entrega pesos
-    libro.save(ARCHIVO)
-    return total, tasa
+
+    # Intentamos guardar el archivo de forma segura. Si el archivo está abierto,
+    # atrapamos el error y avisamos al usuario.
+    try:
+        libro.save(ARCHIVO)
+        return total, tasa
+    except PermissionError:
+        print(
+            "\n[ERROR CRÍTICO] No se pudo guardar la operación porque el archivo Excel está abierto."
+        )
+        print(
+            "[Sugerencia] Por favor, cerrá la planilla 'CambioAtlantico_BD.xlsx' y volvé a intentar.\n"
+        )
+        # Devolvemos None para que el programa principal sepa que la transacción falló
+        return None, None
 
 
 # ----------------------------- Programa principal -----------------------------
