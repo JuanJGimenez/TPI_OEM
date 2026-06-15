@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL"
+                  xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+                  xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+                  xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+                  id="Definitions_CambioAtlantico_ToBe"
+                  targetNamespace="http://bpmn.io/schema/bpmn">
+  <bpmn:collaboration id="Collaboration_1">
+    <bpmn:participant id="Participant_1" name="Cambio Atlántico (proceso propuesto)" processRef="Process_1" />
+  </bpmn:collaboration>
+  <bpmn:process id="Process_1" isExecutable="false">
+    <bpmn:laneSet id="LaneSet_1">
+      <bpmn:lane id="Lane_Usuario" name="Usuario">
+        <bpmn:flowNodeRef>Task_Monto</bpmn:flowNodeRef>
+      </bpmn:lane>
+      <bpmn:lane id="Lane_Bot" name="Sistema / Bot">
+        <bpmn:flowNodeRef>StartEvent_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Cotizacion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_1</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_Consulta</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Gateway_2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_SinStock</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>Task_Registrar</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>EndEvent_OK</bpmn:flowNodeRef>
+      </bpmn:lane>
+    </bpmn:laneSet>
+    <bpmn:startEvent id="StartEvent_1" name="Inicio">
+      <bpmn:outgoing>Flow_s1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:serviceTask id="Task_Cotizacion" name="Mostrar cotización (USD y EUR)">
+      <bpmn:incoming>Flow_s1</bpmn:incoming>
+      <bpmn:outgoing>Flow_s2</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:exclusiveGateway id="Gateway_1" name="¿Opera o consulta?">
+      <bpmn:incoming>Flow_s2</bpmn:incoming>
+      <bpmn:outgoing>Flow_consulta</bpmn:outgoing>
+      <bpmn:outgoing>Flow_operar</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_Consulta" name="Consulta informativa">
+      <bpmn:incoming>Flow_consulta</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:userTask id="Task_Monto" name="Ingresar monto">
+      <bpmn:incoming>Flow_operar</bpmn:incoming>
+      <bpmn:outgoing>Flow_monto</bpmn:outgoing>
+    </bpmn:userTask>
+    <bpmn:exclusiveGateway id="Gateway_2" name="¿Hay disponibilidad?">
+      <bpmn:incoming>Flow_monto</bpmn:incoming>
+      <bpmn:outgoing>Flow_sinstock</bpmn:outgoing>
+      <bpmn:outgoing>Flow_si</bpmn:outgoing>
+    </bpmn:exclusiveGateway>
+    <bpmn:endEvent id="EndEvent_SinStock" name="Sin stock">
+      <bpmn:incoming>Flow_sinstock</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:serviceTask id="Task_Registrar" name="Registrar operación">
+      <bpmn:incoming>Flow_si</bpmn:incoming>
+      <bpmn:outgoing>Flow_ok</bpmn:outgoing>
+    </bpmn:serviceTask>
+    <bpmn:endEvent id="EndEvent_OK" name="Operación completada">
+      <bpmn:incoming>Flow_ok</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_s1" sourceRef="StartEvent_1" targetRef="Task_Cotizacion" />
+    <bpmn:sequenceFlow id="Flow_s2" sourceRef="Task_Cotizacion" targetRef="Gateway_1" />
+    <bpmn:sequenceFlow id="Flow_consulta" name="Solo consultar" sourceRef="Gateway_1" targetRef="EndEvent_Consulta" />
+    <bpmn:sequenceFlow id="Flow_operar" name="Comprar / vender" sourceRef="Gateway_1" targetRef="Task_Monto" />
+    <bpmn:sequenceFlow id="Flow_monto" sourceRef="Task_Monto" targetRef="Gateway_2" />
+    <bpmn:sequenceFlow id="Flow_sinstock" name="No" sourceRef="Gateway_2" targetRef="EndEvent_SinStock" />
+    <bpmn:sequenceFlow id="Flow_si" name="Sí" sourceRef="Gateway_2" targetRef="Task_Registrar" />
+    <bpmn:sequenceFlow id="Flow_ok" sourceRef="Task_Registrar" targetRef="EndEvent_OK" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Collaboration_1">
+      <bpmndi:BPMNShape id="Participant_1_di" bpmnElement="Participant_1" isHorizontal="true">
+        <dc:Bounds x="160" y="40" width="980" height="360" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Usuario_di" bpmnElement="Lane_Usuario" isHorizontal="true">
+        <dc:Bounds x="190" y="40" width="950" height="160" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Lane_Bot_di" bpmnElement="Lane_Bot" isHorizontal="true">
+        <dc:Bounds x="190" y="200" width="950" height="200" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="StartEvent_1_di" bpmnElement="StartEvent_1">
+        <dc:Bounds x="240" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="246" y="325" width="30" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Cotizacion_di" bpmnElement="Task_Cotizacion">
+        <dc:Bounds x="320" y="260" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_1_di" bpmnElement="Gateway_1" isMarkerVisible="true">
+        <dc:Bounds x="500" y="275" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="486" y="245" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_Consulta_di" bpmnElement="EndEvent_Consulta">
+        <dc:Bounds x="507" y="342" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="487" y="382" width="78" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Monto_di" bpmnElement="Task_Monto">
+        <dc:Bounds x="610" y="80" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_2_di" bpmnElement="Gateway_2" isMarkerVisible="true">
+        <dc:Bounds x="760" y="275" width="50" height="50" />
+        <bpmndi:BPMNLabel><dc:Bounds x="746" y="245" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_SinStock_di" bpmnElement="EndEvent_SinStock">
+        <dc:Bounds x="767" y="342" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="757" y="382" width="56" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Registrar_di" bpmnElement="Task_Registrar">
+        <dc:Bounds x="880" y="260" width="120" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_OK_di" bpmnElement="EndEvent_OK">
+        <dc:Bounds x="1060" y="282" width="36" height="36" />
+        <bpmndi:BPMNLabel><dc:Bounds x="1038" y="325" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNEdge id="Flow_s1_di" bpmnElement="Flow_s1">
+        <di:waypoint x="276" y="300" /><di:waypoint x="320" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_s2_di" bpmnElement="Flow_s2">
+        <di:waypoint x="440" y="300" /><di:waypoint x="500" y="300" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_consulta_di" bpmnElement="Flow_consulta">
+        <di:waypoint x="525" y="325" /><di:waypoint x="525" y="342" />
+        <bpmndi:BPMNLabel><dc:Bounds x="531" y="326" width="70" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_operar_di" bpmnElement="Flow_operar">
+        <di:waypoint x="550" y="300" /><di:waypoint x="580" y="300" /><di:waypoint x="580" y="120" /><di:waypoint x="610" y="120" />
+        <bpmndi:BPMNLabel><dc:Bounds x="586" y="150" width="80" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_monto_di" bpmnElement="Flow_monto">
+        <di:waypoint x="730" y="120" /><di:waypoint x="785" y="120" /><di:waypoint x="785" y="275" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_sinstock_di" bpmnElement="Flow_sinstock">
+        <di:waypoint x="785" y="325" /><di:waypoint x="785" y="342" />
+        <bpmndi:BPMNLabel><dc:Bounds x="791" y="326" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_si_di" bpmnElement="Flow_si">
+        <di:waypoint x="810" y="300" /><di:waypoint x="880" y="300" />
+        <bpmndi:BPMNLabel><dc:Bounds x="838" y="282" width="20" height="14" /></bpmndi:BPMNLabel>
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_ok_di" bpmnElement="Flow_ok">
+        <di:waypoint x="1000" y="300" /><di:waypoint x="1060" y="300" />
+      </bpmndi:BPMNEdge>
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
